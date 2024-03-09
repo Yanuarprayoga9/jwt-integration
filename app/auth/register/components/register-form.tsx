@@ -1,4 +1,5 @@
-"use client"
+"use client";
+import { cookies } from "next/headers";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -14,9 +15,9 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import axios, { AxiosError } from "axios";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Cookies from "universal-cookie";
 export const formSchema = z.object({
   email: z.string().min(8).max(50),
@@ -44,26 +45,17 @@ export const LoginForm = () => {
         "http://127.0.0.1:8000/api/login",
         validatedFields.data
       );
-      if(response.data.success)  router.push('/dashboard')
-      cookie.set("token", response.data?.token);
+      console.log(response.data.token);
+    //   cookie.set("token", response.data?.token);
     } catch (error) {
       const err = error as AxiosError;
-      setError("Invalid Credentials");
+      setError(err.message);
       console.log(error);
     } finally {
       setLoading(false); // Setting loading to false regardless of success or failure
     }
   };
 
-  useEffect(() => {
-
-    //check token
-    if(cookie.get('token')) {
-
-        //redirect page dashboard
-        router.push('/dashboard');
-    }
-}, []);
   return (
     <>
       <Form {...form}>
