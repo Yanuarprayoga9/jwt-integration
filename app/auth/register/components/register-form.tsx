@@ -15,51 +15,90 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useState, useTransition } from "react";
+import Cookies from "universal-cookie";
+import { useEffect, useState, useTransition } from "react";
 import axios, { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
-import Cookies from "universal-cookie";
-export const formSchema = z.object({
-  email: z.string().min(8).max(50),
-  password: z.string().min(8).max(50),
-});
+import Link from "next/link";
+export const formSchema = z
+  .object({
+    name: z.string().min(8).max(50),
+    email: z.string().min(8).max(50),
+    password: z.string().min(8).max(50),
+    password_confirmation: z.string().min(8).max(50),
+  })
+  .refine((data) => data.password === data.password_confirmation, {
+    message: "Password and confirmation must match",
+    path: ["password_confirmation"],
+  });
 
-export const LoginForm = () => {
-  const cookie = new Cookies();
+export const RegisterForm = () => {
   const [loading, setLoading] = useState<boolean | undefined>(false);
-  const [error, setError] = useState<String>();
+  const [error, setError] = useState<string | undefined>();
+  const [message, setMessage] = useState<String>();
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    setError("");
+    setMessage("");
     const validatedFields = formSchema.safeParse(values);
     if (!validatedFields.success) {
       return setError("Invalid fields");
     }
 
-    try {
-      setLoading(true);
-      const response = await axios.post(
-        "http://127.0.0.1:8000/api/login",
+    setLoading(true);
+    axios
+      .post(
+        `${process.env.NEXT_PUBLIC_API_BACKEND}/api/register`,
         validatedFields.data
-      );
-      console.log(response.data.token);
-    //   cookie.set("token", response.data?.token);
-    } catch (error) {
-      const err = error as AxiosError;
-      setError(err.message);
-      console.log(error);
-    } finally {
-      setLoading(false); // Setting loading to false regardless of success or failure
-    }
+      )
+      .then((response) => {
+        if (response.data.success) {
+          setMessage("Register success");
+        }
+        // if (response.data.email) {
+        //   setMessage("user already registered");
+        // }
+      })
+      .catch((error) => {
+        if(error.response.data.email){
+          setError(error.response.data.email);
+        }
+        setError("Something Went Wrong");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
+  useEffect(() => {
+    //check token
+    const cookie = new Cookies();
 
+    if (cookie.get("token")) {
+      //redirect page dashboard
+      router.push("/dashboard");
+    }
+  }, [router]);
   return (
     <>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8" method="POST">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>name</FormLabel>
+                <FormControl>
+                  <Input placeholder="shadcn" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <FormField
             control={form.control}
             name="email"
@@ -78,19 +117,39 @@ export const LoginForm = () => {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>passowrd</FormLabel>
+                <FormLabel>password</FormLabel>
                 <FormControl>
-                  <Input placeholder="shadcn" {...field} />
+                  <Input type="password" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
+          <FormField
+            control={form.control}
+            name="password_confirmation"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>password</FormLabel>
+                <FormControl>
+                  <Input type="password" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <p className="text-green-500">
+            {message && message ? message : null}
+          </p>
+
+          <p className="text-red-600">{error && error ? error : null}</p>
           <Button disabled={loading} type="submit">
             Submit
           </Button>
         </form>
       </Form>
+      <Link href="/auth/login">login</Link>
+
     </>
   );
 };
