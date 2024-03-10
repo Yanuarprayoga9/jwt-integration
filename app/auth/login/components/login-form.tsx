@@ -18,6 +18,8 @@ import { useEffect, useState, useTransition } from "react";
 import axios, { AxiosError } from "axios";
 import { redirect, useRouter } from "next/navigation";
 import Cookies from "universal-cookie";
+import FormError from "@/components/form-error";
+import Link from "next/link";
 export const formSchema = z.object({
   email: z.string().min(8).max(50),
   password: z.string().min(8).max(50),
@@ -26,7 +28,7 @@ export const formSchema = z.object({
 export const LoginForm = () => {
   const cookie = new Cookies();
   const [loading, setLoading] = useState<boolean | undefined>(false);
-  const [error, setError] = useState<String>();
+  const [error, setError] = useState<string>();
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -41,7 +43,7 @@ export const LoginForm = () => {
     try {
       setLoading(true);
       const response = await axios.post(
-        "http://127.0.0.1:8000/api/login",
+        `${process.env.NEXT_PUBLIC_API_BACKEND}/api/login`,
         validatedFields.data
       );
       if(response.data.success)  router.push('/dashboard')
@@ -63,7 +65,7 @@ export const LoginForm = () => {
         //redirect page dashboard
         router.push('/dashboard');
     }
-}, []);
+}, [cookie, router]);
   return (
     <>
       <Form {...form}>
@@ -94,11 +96,13 @@ export const LoginForm = () => {
               </FormItem>
             )}
           />
+          <FormError message={error}/>
           <Button disabled={loading} type="submit">
             Submit
           </Button>
         </form>
       </Form>
+      <Link href="/auth/register">register</Link>
     </>
   );
 };
