@@ -96,13 +96,13 @@ export const LoginForm = () => {
               </FormItem>
             )}
           />
-          <FormError message={error}/>
+          <p className="text-red-600">{error && error ? error : null}</p>
           <Button disabled={loading} type="submit">
             Submit
           </Button>
         </form>
       </Form>
-      <Link href="/auth/register">register</Link>
+      <Link href="/auth/register" className="text-muted-foreground">/register</Link>
     </>
   );
 };

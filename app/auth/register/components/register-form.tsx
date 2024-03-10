@@ -148,7 +148,7 @@ export const RegisterForm = () => {
           </Button>
         </form>
       </Form>
-      <Link href="/auth/login">login</Link>
+      <Link className="text-muted-foreground text-sm" href="/auth/login">/login</Link>
 
     </>
   );
