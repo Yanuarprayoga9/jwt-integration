@@ -1,17 +1,17 @@
 "use client";
-
-import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
+import React, { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import { userContext } from "@/hooks/useUser";
+import { Router } from "next/router";
 interface LayoutProps {
   children: React.ReactNode;
 }
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-  const token = Cookies.get("token");
-  const Router = useRouter();
-
+  const [token,setToken] = useState(Cookies.get("token"));
+  const Router = useRouter()
+  //state user
   const [user, setUser] = useState({});
 
   //function "fetchData"
@@ -24,10 +24,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       .then((response) => {
         //set response user to state
         setUser(response.data);
+        console.log(response.data);
       });
   };
-
-  //hook useEffect
   useEffect(() => {
     //check token empty
     if (!token) {
@@ -38,17 +37,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     //call function "fetchData"
     fetchData();
   }, []);
-
-  //function logout
-  
   return (
-    <userContext.Provider value={user}>
-      <div className="h-full flex items-center justify-center">
-        <div className="w-[600px] mt-48 shadow-md bg-slate-100 ">
-          <div className="p-[50px]">{children}</div>
-        </div>
-      </div>
-    </userContext.Provider>
+    <div className="h-full flex items-center justify-center">
+     
   );
 };
 

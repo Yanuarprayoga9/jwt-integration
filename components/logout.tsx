@@ -5,7 +5,8 @@ import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-const Page = () => {
+import { LogOut } from "lucide-react";
+export const  Logout = () => {
   const cookies = new Cookies();
   const router = useRouter()
 
@@ -22,17 +23,15 @@ const Page = () => {
         cookies.remove("token");
 
         //redirect halaman login
-        router.push('/login');
+        router.push('/auth/login');
     });
 };
-  useEffect(()=>{
-    if(!cookies.get('token')) router.push('/auth/login');
-  })
+  
   return (
     <div>
-      <Button onClick={logoutHanlder}>logout</Button>
+      <Button onClick={logoutHanlder}><LogOut/> logout</Button>
     </div>
   );
 };
 
-export default Page;
+
